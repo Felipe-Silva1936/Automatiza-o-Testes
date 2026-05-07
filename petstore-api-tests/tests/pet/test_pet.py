@@ -93,9 +93,16 @@ class TestPetRead:
         ResponseAssertions.assert_field_equals(body, "id", pet_id)
         ResponseAssertions.assert_field_equals(body, "name", created_pet["name"])
 
-    def test_get_pet_by_nonexistent_id_returns_404(self, pet_client: PetClient):
-        response = pet_client.get_pet_by_id(999999999)
+    def test_get_pet_by_nonexistent_id_returns_404(self, pet_client: PetClient, new_pet_payload: dict):
+        # Cria um pet, deleta ele e então busca pelo ID deletado
+        # Garante que o ID não existe independente do estado da API pública
+        create_resp = pet_client.add_pet(new_pet_payload)
+        assert create_resp.status_code == 200, "Falha ao criar pet para o teste"
+        pet_id = create_resp.json()["id"]
 
+        pet_client.delete_pet(pet_id)
+
+        response = pet_client.get_pet_by_id(pet_id)
         ResponseAssertions.assert_not_found(response)
 
 
