@@ -39,7 +39,7 @@ jobs:
         with:
           python-version: "3.12"
           cache: "pip"
-          cache-dependency-path: requirements.txt
+          cache-dependency-path: petstore-api-tests/requirements.txt
 
       - name: "📦 Instalar dependências"
         run: pip install -r requirements.txt
@@ -102,7 +102,7 @@ jobs:
         working-directory: saucedemo-web-tests
 
     env:
-      BASE_URL:          ${{ vars.BASE_URL_WEB    || 'https://www.saucedemo.com' }}
+      BASE_URL:          ${{ vars.BASE_URL_WEB     || 'https://www.saucedemo.com' }}
       STANDARD_USER:     ${{ secrets.STANDARD_USER || 'standard_user' }}
       LOCKED_USER:       ${{ secrets.LOCKED_USER   || 'locked_out_user' }}
       PASSWORD:          ${{ secrets.PASSWORD       || 'secret_sauce' }}
@@ -120,9 +120,10 @@ jobs:
         with:
           python-version: "3.12"
           cache: "pip"
-          cache-dependency-path: saucedemo-web-tests/requirements.txt
+          cache-dependency-path: requirements.txt   # ✅ requirements.txt está na RAIZ do repo
 
       - name: "📦 Instalar dependências Python"
+        working-directory: .                         # ✅ instala a partir da raiz
         run: pip install -r requirements.txt
 
       - name: "🌐 Instalar Google Chrome (estável)"
