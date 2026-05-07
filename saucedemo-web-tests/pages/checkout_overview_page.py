@@ -24,14 +24,16 @@ class CheckoutOverviewPage(BasePage):
     # ── Actions ────────────────────────────────────────────────────────────
 
     def click_finish(self) -> None:
-        self._click(*self._FINISH_BTN)
+        btn = self._find(*self._FINISH_BTN)
+        self._driver.execute_script("arguments[0].click();", btn)
         self._wait_for_url(
             "checkout-complete",
             "Checkout complete page did not load after clicking finish"
         )
 
     def click_cancel(self) -> None:
-        self._click(*self._CANCEL_BTN)
+        btn = self._find(*self._CANCEL_BTN)
+        self._driver.execute_script("arguments[0].click();", btn)
         self._wait_for_url(
             "inventory",
             "Inventory page did not load after cancelling overview"

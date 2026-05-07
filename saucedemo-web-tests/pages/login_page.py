@@ -36,7 +36,8 @@ class LoginPage(BasePage):
         return self
 
     def click_login(self) -> None:
-        self._click(*self._LOGIN_BUTTON)
+        btn = self._find(*self._LOGIN_BUTTON)
+        self._driver.execute_script("arguments[0].click();", btn)
 
     def login(self, username: str, password: str) -> None:
         """Full login flow: fill credentials and submit."""

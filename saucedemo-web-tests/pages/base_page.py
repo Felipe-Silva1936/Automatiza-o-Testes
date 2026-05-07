@@ -71,6 +71,20 @@ class BasePage:
         field.clear()
         field.send_keys(text)
 
+    _JS_SET_REACT_VALUE = """
+        var setter = Object.getOwnPropertyDescriptor(
+            window.HTMLInputElement.prototype, 'value'
+        ).set;
+        setter.call(arguments[0], arguments[1]);
+        arguments[0].dispatchEvent(new Event('input', { bubbles: true }));
+        arguments[0].dispatchEvent(new Event('change', { bubbles: true }));
+    """
+
+    def _type_react(self, by: str, locator: str, text: str) -> None:
+        """Sets value on React-controlled inputs via the native setter + synthetic events."""
+        field = self._find(by, locator)
+        self._driver.execute_script(self._JS_SET_REACT_VALUE, field, text)
+
     def _get_text(self, by: str, locator: str) -> str:
         return self._find_visible(by, locator).text.strip()
 

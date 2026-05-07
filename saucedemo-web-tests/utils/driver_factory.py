@@ -27,7 +27,6 @@ class DriverFactory:
 
         # Selenium Manager (nativo do Selenium 4.6+) gerencia o driver automaticamente
         driver = webdriver.Chrome(options=options)  # ← Chrome com C maiúsculo
-        driver.implicitly_wait(settings.IMPLICIT_WAIT)
         driver.set_page_load_timeout(settings.PAGE_LOAD_TIMEOUT)
 
         return driver

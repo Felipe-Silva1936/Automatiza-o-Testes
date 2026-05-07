@@ -21,14 +21,15 @@ class CheckoutInfoPage(BasePage):
     # ── Actions ────────────────────────────────────────────────────────────
 
     def fill_info(self, first: str, last: str, postal: str) -> "CheckoutInfoPage":
-        """Fill all checkout fields at once."""
-        self._type(*self._FIRST_NAME, first)
-        self._type(*self._LAST_NAME, last)
-        self._type(*self._POSTAL_CODE, postal)
+        """Fill all checkout fields using React-compatible JS setter."""
+        self._type_react(*self._FIRST_NAME, first)
+        self._type_react(*self._LAST_NAME, last)
+        self._type_react(*self._POSTAL_CODE, postal)
         return self
 
     def click_continue(self) -> None:
-        self._click(*self._CONTINUE_BTN)
+        btn = self._find(*self._CONTINUE_BTN)
+        self._driver.execute_script("arguments[0].click();", btn)
 
     def click_cancel(self) -> None:
         self._click(*self._CANCEL_BTN)
@@ -37,6 +38,7 @@ class CheckoutInfoPage(BasePage):
         """Fluent: fill form and continue."""
         self.fill_info(first, last, postal)
         self.click_continue()
+        self._wait_for_url("checkout-step-two", "Checkout overview did not load after submitting info")
 
     # ── Queries ────────────────────────────────────────────────────────────
 

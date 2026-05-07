@@ -56,7 +56,8 @@ class InventoryPage(BasePage):
         return items[0].find_element(By.CLASS_NAME, "inventory_item_price").text.strip()
 
     def go_to_cart(self) -> None:
-        self._click(*self._CART_LINK)
+        cart_link = self._find_clickable(*self._CART_LINK)
+        self._driver.execute_script("arguments[0].click();", cart_link)
         self._wait_for_url("cart", "Cart page did not load after clicking cart link")
 
     def logout(self) -> None:
