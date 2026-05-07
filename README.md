@@ -22,11 +22,17 @@ cd Automatiza-o-Testes
 ```
 
 ### 2. Testes de API (Petstore)
-Navegue para a pasta do projeto de API e instale as dependências:
+Navegue para a pasta do projeto de API e configure o ambiente:
 copie o caminho da pasta usando botão direito e copiando caminho no arquivo petstore-api-tests
+
 ```bash
 cd <caminho copiado>
-pip install -r requirements.txt
+
+# Ativar o ambiente virtual
+& "..\.venv\Scripts\Activate.ps1"
+
+# Instalar dependências
+pip install -r ..\requirements.txt
 ```
 
 #### Executar testes:
@@ -54,11 +60,16 @@ pip install -r requirements.txt
   ```
 
 ### 3. Testes Web (SauceDemo)
-Navegue para a pasta do projeto web e instale as dependências:
+Navegue para a pasta do projeto web e configure o ambiente:
 copie o caminho da pasta usando botão direito e copiando caminho no arquivo saucedemo-web-tests
 ```bash
 cd <caminho copiado>
-pip install -r requirements.txt
+
+# Ativar o ambiente virtual
+& "..\.venv\Scripts\Activate.ps1"
+
+# Instalar dependências
+pip install -r ..\requirements.txt
 ```
 
 #### Executar testes:
