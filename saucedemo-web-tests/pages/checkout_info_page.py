@@ -10,13 +10,13 @@ class CheckoutInfoPage(BasePage):
     PATH = "/checkout-step-one.html"
 
     # ── Locators ───────────────────────────────────────────────────────────
-    _PAGE_TITLE     = (By.CLASS_NAME, "title")
-    _FIRST_NAME     = (By.ID, "first-name")
-    _LAST_NAME      = (By.ID, "last-name")
-    _POSTAL_CODE    = (By.ID, "postal-code")
-    _CONTINUE_BTN   = (By.ID, "continue")
-    _CANCEL_BTN     = (By.ID, "cancel")
-    _ERROR_MESSAGE  = (By.CSS_SELECTOR, "[data-test='error']")
+    _PAGE_TITLE    = (By.CLASS_NAME, "title")
+    _FIRST_NAME    = (By.ID, "first-name")
+    _LAST_NAME     = (By.ID, "last-name")
+    _POSTAL_CODE   = (By.ID, "postal-code")
+    _CONTINUE_BTN  = (By.ID, "continue")
+    _CANCEL_BTN    = (By.ID, "cancel")
+    _ERROR_MESSAGE = (By.CSS_SELECTOR, "[data-test='error']")
 
     # ── Actions ────────────────────────────────────────────────────────────
 
@@ -28,10 +28,12 @@ class CheckoutInfoPage(BasePage):
         return self
 
     def click_continue(self) -> None:
-        self._click(*self._CONTINUE_BTN)
+        btn = self._find_clickable(*self._CONTINUE_BTN)
+        self._driver.execute_script("arguments[0].click();", btn)
 
     def click_cancel(self) -> None:
-        self._click(*self._CANCEL_BTN)
+        btn = self._find_clickable(*self._CANCEL_BTN)
+        self._driver.execute_script("arguments[0].click();", btn)
 
     def submit(self, first: str, last: str, postal: str) -> None:
         """Fluent: fill form and continue."""
