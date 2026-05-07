@@ -13,20 +13,41 @@ class DriverFactory:
     def create_driver() -> webdriver.Chrome:
         options = ChromeOptions()
 
+        # ── Headless ───────────────────────────────────────────────────────
         if settings.HEADLESS:
             options.add_argument("--headless=new")
 
+        # ── Estabilidade no CI ─────────────────────────────────────────────
         options.add_argument("--no-sandbox")
         options.add_argument("--disable-dev-shm-usage")
         options.add_argument("--disable-gpu")
         options.add_argument("--window-size=1920,1080")
         options.add_argument("--disable-extensions")
         options.add_argument("--disable-infobars")
+
+        # ── Bloquear popups que interferem nos cliques ─────────────────────
+        options.add_argument("--disable-notifications")
+        options.add_argument("--disable-popup-blocking")
+        options.add_argument("--disable-save-password-bubble")
+        options.add_argument("--disable-translate")
+        options.add_argument("--disable-features=PasswordManagerEnabled")
+        options.add_argument("--disable-features=TranslateUI")
+
+        # ── Desabilitar automação banners ──────────────────────────────────
         options.add_experimental_option("excludeSwitches", ["enable-automation"])
         options.add_experimental_option("useAutomationExtension", False)
 
-        # Selenium Manager (nativo do Selenium 4.6+) gerencia o driver automaticamente
-        driver = webdriver.Chrome(options=options)  # ← Chrome com C maiúsculo
+        # ── Desabilitar popups via prefs ───────────────────────────────────
+        prefs = {
+            "credentials_enable_service": False,
+            "profile.password_manager_enabled": False,
+            "profile.default_content_setting_values.notifications": 2,
+            "profile.default_content_setting_values.automatic_downloads": 1,
+        }
+        options.add_experimental_option("prefs", prefs)
+
+        # ── Selenium Manager cuida do driver automaticamente ───────────────
+        driver = webdriver.Chrome(options=options)
         driver.implicitly_wait(settings.IMPLICIT_WAIT)
         driver.set_page_load_timeout(settings.PAGE_LOAD_TIMEOUT)
 
