@@ -1,7 +1,5 @@
 from selenium import webdriver
-from selenium.webdriver.chrome.service import Service as ChromeService
 from selenium.webdriver.chrome.options import Options as ChromeOptions
-from webdriver_manager.chrome import ChromeDriverManager
 from config.settings import settings
 
 
@@ -24,11 +22,12 @@ class DriverFactory:
         options.add_argument("--window-size=1920,1080")
         options.add_argument("--disable-extensions")
         options.add_argument("--disable-infobars")
-        # Disable automation banners
         options.add_experimental_option("excludeSwitches", ["enable-automation"])
         options.add_experimental_option("useAutomationExtension", False)
 
-        driver = webdriver.chrome(options=options )
+        # Selenium Manager (nativo do Selenium 4.6+) gerencia o driver automaticamente
+        driver = webdriver.Chrome(options=options)  # ← Chrome com C maiúsculo
         driver.implicitly_wait(settings.IMPLICIT_WAIT)
         driver.set_page_load_timeout(settings.PAGE_LOAD_TIMEOUT)
+
         return driver
