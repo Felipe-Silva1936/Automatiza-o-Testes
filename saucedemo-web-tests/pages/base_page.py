@@ -9,16 +9,13 @@ from config.settings import settings
 class BasePage:
     """
     Abstract base Page Object.
-    Usa exclusivamente WebDriverWait explícito — implicit_wait está zerado
-    no driver para evitar conflitos e comportamento imprevisível.
+    Provides shared WebDriver helpers so subclasses stay free of boilerplate.
+    All element interactions go through these protected methods for consistency.
     """
 
     def __init__(self, driver: WebDriver):
         self._driver = driver
-        # Wait padrão baseado na config
         self._wait = WebDriverWait(driver, settings.IMPLICIT_WAIT)
-        # Wait longo para ações críticas de navegação
-        self._long_wait = WebDriverWait(driver, settings.IMPLICIT_WAIT * 2)
 
     # ── Navigation ─────────────────────────────────────────────────────────
 
@@ -92,17 +89,7 @@ class BasePage:
 
     def _wait_for_url(self, fragment: str, message: str = "") -> None:
         """Aguarda a URL conter o fragmento especificado."""
-        self._long_wait.until(
+        self._wait.until(
             EC.url_contains(fragment),
             message=message or f"URL did not contain '{fragment}'"
-        )
-
-    def _wait_for_element_text(
-        self, element: WebElement, expected_text: str, timeout: int = None
-    ) -> None:
-        """Aguarda um elemento específico ter o texto esperado."""
-        wait = WebDriverWait(self._driver, timeout or settings.IMPLICIT_WAIT)
-        wait.until(
-            lambda d: element.text.strip().lower() == expected_text.lower(),
-            message=f"Element text did not become '{expected_text}'"
         )

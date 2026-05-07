@@ -1,7 +1,5 @@
 import pytest
 from selenium.webdriver.remote.webdriver import WebDriver
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
 from utils.driver_factory import DriverFactory
 from pages import (
     LoginPage,
@@ -60,22 +58,19 @@ def checkout_complete_page(driver: WebDriver) -> CheckoutCompletePage:
 def authenticated_inventory(driver: WebDriver) -> InventoryPage:
     """
     Starts every test already logged in and on the inventory page.
-    Aguarda a página estar completamente carregada antes de retornar.
+    Avoids repeating the login flow in tests that don't cover auth.
     """
     login = LoginPage(driver)
     login.open()
     login.login(settings.STANDARD_USER, settings.PASSWORD)
-
-    # Aguarda URL do inventário
+    # Aguarda navegação para o inventário antes de retornar
+    from selenium.webdriver.support.ui import WebDriverWait
+    from selenium.webdriver.support import expected_conditions as EC
     WebDriverWait(driver, settings.IMPLICIT_WAIT).until(
         EC.url_contains("inventory"),
         message="Inventory page did not load after login"
     )
-
-    # Aguarda botões de Add to cart estarem interativos
-    inventory = InventoryPage(driver)
-    inventory.wait_until_ready()
-    return inventory
+    return InventoryPage(driver)
 
 @pytest.fixture
 def cart_with_one_item(authenticated_inventory: InventoryPage) -> CartPage:
@@ -85,18 +80,23 @@ def cart_with_one_item(authenticated_inventory: InventoryPage) -> CartPage:
     """
     authenticated_inventory.add_first_item_to_cart()
     authenticated_inventory.go_to_cart()
+    # go_to_cart já aguarda url_contains("cart")
     return CartPage(authenticated_inventory._driver)
 
 @pytest.fixture
 def checkout_info_ready(cart_with_one_item: CartPage) -> CheckoutInfoPage:
     """Proceeds to checkout step 1 with one item already in cart."""
     cart_with_one_item.go_to_checkout()
+    # go_to_checkout já aguarda url_contains("checkout-step-one")
     return CheckoutInfoPage(cart_with_one_item._driver)
 
 @pytest.fixture
 def checkout_overview_ready(checkout_info_ready: CheckoutInfoPage) -> CheckoutOverviewPage:
     """Proceeds to checkout step 2 (overview) with valid shipping info filled."""
     checkout_info_ready.submit("João", "Silva", "01310-100")
+    # Aguarda navegação para a overview antes de retornar
+    from selenium.webdriver.support.ui import WebDriverWait
+    from selenium.webdriver.support import expected_conditions as EC
     WebDriverWait(checkout_info_ready._driver, settings.IMPLICIT_WAIT).until(
         EC.url_contains("checkout-step-two"),
         message="Checkout overview did not load after submitting info"

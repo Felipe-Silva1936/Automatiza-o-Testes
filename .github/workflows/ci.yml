@@ -9,14 +9,12 @@ on:
     branches:
       - main
   schedule:
-    - cron: "0 6 * * 1-5"   # Segunda a sexta às 06:00 UTC
+    - cron: "0 6 * * 1-5"
   workflow_dispatch:
 
 jobs:
 
-  # ────────────────────────────────────────────────────────────────────────────
   api-tests:
-  # ────────────────────────────────────────────────────────────────────────────
     name: "🔌 Testes de API (Petstore)"
     runs-on: ubuntu-latest
     timeout-minutes: 15
@@ -30,24 +28,19 @@ jobs:
       TIMEOUT:  ${{ vars.TIMEOUT  || '30' }}
 
     steps:
-
       - name: "📥 Checkout do repositório"
         uses: actions/checkout@v4
-
       - name: "🐍 Configurar Python 3.12"
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
           cache: "pip"
           cache-dependency-path: requirements.txt
-
       - name: "📦 Instalar dependências"
         working-directory: .
         run: pip install -r requirements.txt
-
       - name: "📁 Criar diretório de relatórios"
         run: mkdir -p reports
-
       - name: "🧪 Executar testes de API"
         run: |
           pytest tests/ \
@@ -57,7 +50,6 @@ jobs:
             --json-report-file=reports/report.json \
             -v \
             --tb=short
-
       - name: "📊 Publicar resumo – API"
         if: always()
         run: |
@@ -74,7 +66,6 @@ jobs:
           else
             echo "> ⚠️ Arquivo de relatório não encontrado." >> $GITHUB_STEP_SUMMARY
           fi
-
       - name: "📤 Upload – Relatório HTML (API)"
         if: always()
         uses: actions/upload-artifact@v4
@@ -82,7 +73,6 @@ jobs:
           name: "api-report-html-${{ github.run_number }}"
           path: petstore-api-tests/reports/report.html
           retention-days: 30
-
       - name: "📤 Upload – Relatório JSON (API)"
         if: always()
         uses: actions/upload-artifact@v4
@@ -91,9 +81,7 @@ jobs:
           path: petstore-api-tests/reports/report.json
           retention-days: 30
 
-  # ────────────────────────────────────────────────────────────────────────────
   web-tests:
-  # ────────────────────────────────────────────────────────────────────────────
     name: "🌐 Testes Web E2E (SauceDemo)"
     runs-on: ubuntu-latest
     timeout-minutes: 15
@@ -112,48 +100,28 @@ jobs:
       PAGE_LOAD_TIMEOUT: "30"
 
     steps:
-
       - name: "📥 Checkout do repositório"
         uses: actions/checkout@v4
-
       - name: "🐍 Configurar Python 3.12"
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
           cache: "pip"
           cache-dependency-path: requirements.txt
-
       - name: "📦 Instalar dependências Python"
         working-directory: .
         run: pip install -r requirements.txt
-
-      - name: "🌐 Setup Chrome"
-        uses: browser-actions/setup-chrome@latest
-        with:
-          chrome-version: stable
-
-      - name: "🔧 Setup ChromeDriver"
-        uses: nanasess/setup-chromedriver@master
-
-      - name: "🔍 Verificar versões instaladas"
-        run: |
-          google-chrome --version
-          chromedriver --version
-
       - name: "📁 Criar diretório de relatórios"
         run: mkdir -p reports
-
       - name: "🧪 Executar testes Web E2E"
         run: |
           pytest tests/ \
-            -n 2 \
             --html=reports/report.html \
             --self-contained-html \
             --json-report \
             --json-report-file=reports/report.json \
             -v \
             --tb=short
-
       - name: "📊 Publicar resumo – Web"
         if: always()
         run: |
@@ -170,7 +138,6 @@ jobs:
           else
             echo "> ⚠️ Arquivo de relatório não encontrado." >> $GITHUB_STEP_SUMMARY
           fi
-
       - name: "📤 Upload – Relatório HTML (Web)"
         if: always()
         uses: actions/upload-artifact@v4
@@ -178,7 +145,6 @@ jobs:
           name: "web-report-html-${{ github.run_number }}"
           path: saucedemo-web-tests/reports/report.html
           retention-days: 30
-
       - name: "📤 Upload – Relatório JSON (Web)"
         if: always()
         uses: actions/upload-artifact@v4
