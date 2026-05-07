@@ -1,6 +1,6 @@
 
 <h2>8. README.md</h2>
-
+```markdown
 # Automação de Testes - API e Web
 
 ## Descrição
@@ -17,15 +17,14 @@ Este repositório contém automações de teste para duas aplicações:
 
 ### 1. Clone o repositório
 ```bash
-git clone <seu-repo>
+git clone <https://github.com/Felipe-Silva1936/Automatiza-o-Testes.git>
 cd Automatiza-o-Testes
 ```
 
 ### 2. Testes de API (Petstore)
 Navegue para a pasta do projeto de API e instale as dependências:
-copie o caminho da pasta usando botão direito e copiando caminho no arquivo petstore-api-tests
 ```bash
-cd <caminho copiado>
+cd petstore-api-tests
 pip install -r requirements.txt
 ```
 
@@ -55,9 +54,8 @@ pip install -r requirements.txt
 
 ### 3. Testes Web (SauceDemo)
 Navegue para a pasta do projeto web e instale as dependências:
-copie o caminho da pasta usando botão direito e copiando caminho no arquivo saucedemo-web-tests
 ```bash
-cd <caminho copiado>
+cd SauceDemo-web-tests
 pip install -r requirements.txt
 ```
 
