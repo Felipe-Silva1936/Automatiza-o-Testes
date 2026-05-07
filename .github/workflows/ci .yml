@@ -1,3 +1,4 @@
+name: "CI – Automação de Testes"
 
 on:
   push:
@@ -67,7 +68,7 @@ jobs:
             FAILED=$(python3 -c "import json; d=json.load(open('reports/report.json')); print(d['summary'].get('failed', 0))")
             TOTAL=$(python3  -c "import json; d=json.load(open('reports/report.json')); print(d['summary'].get('total',  0))")
             DURATION=$(python3 -c "import json; d=json.load(open('reports/report.json')); print(round(d.get('duration', 0), 2))")
-            echo "| ✅ Passaram | ❌ Falharam | 🔢 Total | ⏱️ Duração |"    >> $GITHUB_STEP_SUMMARY
+            echo "| ✅ Passaram | ❌ Falharam | 🔢 Total | ⏱ Duração |"    >> $GITHUB_STEP_SUMMARY
             echo "|:-----------:|:-----------:|:--------:|:---------:|"     >> $GITHUB_STEP_SUMMARY
             echo "| $PASSED     | $FAILED     | $TOTAL   | ${DURATION}s |"  >> $GITHUB_STEP_SUMMARY
           else
@@ -95,7 +96,7 @@ jobs:
   # ────────────────────────────────────────────────────────────────────────────
     name: "🌐 Testes Web E2E (SauceDemo)"
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 15
 
     defaults:
       run:
@@ -107,8 +108,8 @@ jobs:
       LOCKED_USER:       ${{ secrets.LOCKED_USER   || 'locked_out_user' }}
       PASSWORD:          ${{ secrets.PASSWORD       || 'secret_sauce' }}
       HEADLESS:          "true"
-      IMPLICIT_WAIT:     "10"
-      PAGE_LOAD_TIMEOUT: "30"
+      IMPLICIT_WAIT:     "5"
+      PAGE_LOAD_TIMEOUT: "15"
 
     steps:
 
@@ -145,6 +146,7 @@ jobs:
       - name: "🧪 Executar testes Web E2E"
         run: |
           pytest tests/ \
+            -n 2 \
             --html=reports/report.html \
             --self-contained-html \
             --json-report \
@@ -162,7 +164,7 @@ jobs:
             FAILED=$(python3 -c "import json; d=json.load(open('reports/report.json')); print(d['summary'].get('failed', 0))")
             TOTAL=$(python3  -c "import json; d=json.load(open('reports/report.json')); print(d['summary'].get('total',  0))")
             DURATION=$(python3 -c "import json; d=json.load(open('reports/report.json')); print(round(d.get('duration', 0), 2))")
-            echo "| ✅ Passaram | ❌ Falharam | 🔢 Total | ⏱️ Duração |"    >> $GITHUB_STEP_SUMMARY
+            echo "| ✅ Passaram | ❌ Falharam | 🔢 Total | ⏱ Duração |"    >> $GITHUB_STEP_SUMMARY
             echo "|:-----------:|:-----------:|:--------:|:---------:|"     >> $GITHUB_STEP_SUMMARY
             echo "| $PASSED     | $FAILED     | $TOTAL   | ${DURATION}s |"  >> $GITHUB_STEP_SUMMARY
           else
