@@ -31,22 +31,32 @@ class InventoryPage(BasePage):
     # ── Actions ────────────────────────────────────────────────────────────
 
     def add_item_to_cart_by_name(self, product_name: str) -> "InventoryPage":
-        """Click 'Add to cart' for a product matched by exact name."""
+        """Click 'Add to cart' via JS — bypassa overlays e popups do Chrome."""
         items = self._find_all(*self._INVENTORY_ITEMS)
         for item in items:
             name_el = item.find_element(By.CLASS_NAME, "inventory_item_name")
             if name_el.text.strip() == product_name:
-                current_count = self.get_cart_item_count()
-                item.find_element(By.TAG_NAME, "button").click()
-                self._wait_for_cart_count(current_count + 1)
+                btn = item.find_element(By.TAG_NAME, "button")
+                # JS click não depende de visibilidade nem interatividade
+                self._driver.execute_script("arguments[0].click();", btn)
+                # Aguarda botão mudar para "Remove" — mais confiável que o badge
+                self._wait.until(
+                    lambda d, b=btn: b.text.strip().lower() == "remove",
+                    message=f"Button did not change to Remove after adding '{product_name}'"
+                )
                 return self
         raise ValueError(f"Product '{product_name}' not found in inventory.")
 
     def add_first_item_to_cart(self) -> "InventoryPage":
-        current_count = self.get_cart_item_count()
         items = self._find_all(*self._INVENTORY_ITEMS)
-        items[0].find_element(By.TAG_NAME, "button").click()
-        self._wait_for_cart_count(current_count + 1)
+        btn = items[0].find_element(By.TAG_NAME, "button")
+        # JS click não depende de visibilidade nem interatividade
+        self._driver.execute_script("arguments[0].click();", btn)
+        # Aguarda botão mudar para "Remove" — mais confiável que o badge
+        self._wait.until(
+            lambda d, b=btn: b.text.strip().lower() == "remove",
+            message="Button did not change to Remove after adding first item"
+        )
         return self
 
     def get_first_item_name(self) -> str:
@@ -64,8 +74,11 @@ class InventoryPage(BasePage):
     def logout(self) -> None:
         self._click(*self._BURGER_MENU)
         self._click(*self._LOGOUT_LINK)
-        # A página de login usa index.html
-        self._wait_for_url("index.html", "Login page did not load after logout")
+        # Aguarda sair do inventário — SauceDemo redireciona para "/" sem index.html
+        self._wait.until(
+            lambda d: "inventory" not in d.current_url,
+            message="Login page did not load after logout"
+        )
 
     def select_sort(self, value: str) -> "InventoryPage":
         """Sort products. Values: 'az', 'za', 'lohi', 'hilo'."""
@@ -92,21 +105,3 @@ class InventoryPage(BasePage):
 
     def get_item_count(self) -> int:
         return len(self._find_all(*self._INVENTORY_ITEMS))
-
-    # ── Private helpers ────────────────────────────────────────────────────
-
-    def _wait_for_cart_count(self, expected: int) -> None:
-        """Aguarda o badge do carrinho refletir a contagem esperada."""
-        def badge_shows_count(driver):
-            badges = driver.find_elements(By.CLASS_NAME, "shopping_cart_badge")
-            if not badges:
-                return expected == 0
-            try:
-                return int(badges[0].text) == expected
-            except ValueError:
-                return False
-
-        self._wait.until(
-            badge_shows_count,
-            message=f"Cart badge did not update to {expected}"
-        )
