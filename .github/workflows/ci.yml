@@ -1,4 +1,4 @@
-name: CI - Automacao de Testes
+name: "CI – Automação de Testes"
 
 on:
   push:
@@ -9,12 +9,15 @@ on:
     branches:
       - main
   schedule:
-    - cron: "0 6 * * 1-5"
-  workflow_dispatch: {}
+    - cron: "0 6 * * 1-5"   # Segunda a sexta às 06:00 UTC
+  workflow_dispatch:
 
 jobs:
+
+  # ────────────────────────────────────────────────────────────────────────────
   api-tests:
-    name: API Tests - Petstore
+  # ────────────────────────────────────────────────────────────────────────────
+    name: "🔌 Testes de API (Petstore)"
     runs-on: ubuntu-latest
     timeout-minutes: 15
 
@@ -24,29 +27,28 @@ jobs:
 
     env:
       BASE_URL: ${{ vars.BASE_URL || 'https://petstore.swagger.io/v2' }}
-      TIMEOUT: ${{ vars.TIMEOUT || '30' }}
+      TIMEOUT:  ${{ vars.TIMEOUT  || '30' }}
 
     steps:
-      - name: Checkout repository
+
+      - name: "📥 Checkout do repositório"
         uses: actions/checkout@v4
 
-      - name: Setup Python 3.12
+      - name: "🐍 Configurar Python 3.12"
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
           cache: "pip"
-          cache-dependency-path: |
-            requirements.txt
-            petstore-api-tests/requirements.txt
+          cache-dependency-path: requirements.txt
 
-      - name: Install dependencies
+      - name: "📦 Instalar dependências"
         working-directory: .
         run: pip install -r requirements.txt
 
-      - name: Create reports directory
+      - name: "📁 Criar diretório de relatórios"
         run: mkdir -p reports
 
-      - name: Run API tests
+      - name: "🧪 Executar testes de API"
         run: |
           pytest tests/ \
             --html=reports/report.html \
@@ -56,41 +58,43 @@ jobs:
             -v \
             --tb=short
 
-      - name: Publish API test results
+      - name: "📊 Publicar resumo – API"
         if: always()
         run: |
-          echo "## API Test Results" >> $GITHUB_STEP_SUMMARY
+          echo "## 🔌 Resultado dos Testes de API" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           if [ -f reports/report.json ]; then
             PASSED=$(python3 -c "import json; d=json.load(open('reports/report.json')); print(d['summary'].get('passed', 0))")
             FAILED=$(python3 -c "import json; d=json.load(open('reports/report.json')); print(d['summary'].get('failed', 0))")
-            TOTAL=$(python3 -c "import json; d=json.load(open('reports/report.json')); print(d['summary'].get('total', 0))")
+            TOTAL=$(python3  -c "import json; d=json.load(open('reports/report.json')); print(d['summary'].get('total',  0))")
             DURATION=$(python3 -c "import json; d=json.load(open('reports/report.json')); print(round(d.get('duration', 0), 2))")
-            echo "| Passed | Failed | Total | Duration |" >> $GITHUB_STEP_SUMMARY
-            echo "|--------|--------|-------|----------|" >> $GITHUB_STEP_SUMMARY
-            echo "| $PASSED | $FAILED | $TOTAL | ${DURATION}s |" >> $GITHUB_STEP_SUMMARY
+            echo "| ✅ Passaram | ❌ Falharam | 🔢 Total | ⏱ Duração |"    >> $GITHUB_STEP_SUMMARY
+            echo "|:-----------:|:-----------:|:--------:|:---------:|"     >> $GITHUB_STEP_SUMMARY
+            echo "| $PASSED     | $FAILED     | $TOTAL   | ${DURATION}s |"  >> $GITHUB_STEP_SUMMARY
           else
-            echo "Report file not found." >> $GITHUB_STEP_SUMMARY
+            echo "> ⚠️ Arquivo de relatório não encontrado." >> $GITHUB_STEP_SUMMARY
           fi
 
-      - name: Upload API test report HTML
+      - name: "📤 Upload – Relatório HTML (API)"
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: api-report-html-${{ github.run_number }}
+          name: "api-report-html-${{ github.run_number }}"
           path: petstore-api-tests/reports/report.html
           retention-days: 30
 
-      - name: Upload API test report JSON
+      - name: "📤 Upload – Relatório JSON (API)"
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: api-report-json-${{ github.run_number }}
+          name: "api-report-json-${{ github.run_number }}"
           path: petstore-api-tests/reports/report.json
           retention-days: 30
 
+  # ────────────────────────────────────────────────────────────────────────────
   web-tests:
-    name: Web E2E Tests - SauceDemo
+  # ────────────────────────────────────────────────────────────────────────────
+    name: "🌐 Testes Web E2E (SauceDemo)"
     runs-on: ubuntu-latest
     timeout-minutes: 15
 
@@ -99,48 +103,47 @@ jobs:
         working-directory: saucedemo-web-tests
 
     env:
-      BASE_URL: ${{ vars.BASE_URL_WEB || 'https://www.saucedemo.com' }}
-      STANDARD_USER: ${{ secrets.STANDARD_USER || 'standard_user' }}
-      LOCKED_USER: ${{ secrets.LOCKED_USER || 'locked_out_user' }}
-      PASSWORD: ${{ secrets.PASSWORD || 'secret_sauce' }}
-      HEADLESS: "true"
-      IMPLICIT_WAIT: "10"
+      BASE_URL:          ${{ vars.BASE_URL_WEB     || 'https://www.saucedemo.com' }}
+      STANDARD_USER:     ${{ secrets.STANDARD_USER || 'standard_user' }}
+      LOCKED_USER:       ${{ secrets.LOCKED_USER   || 'locked_out_user' }}
+      PASSWORD:          ${{ secrets.PASSWORD       || 'secret_sauce' }}
+      HEADLESS:          "true"
+      IMPLICIT_WAIT:     "10"
       PAGE_LOAD_TIMEOUT: "30"
 
     steps:
-      - name: Checkout repository
+
+      - name: "📥 Checkout do repositório"
         uses: actions/checkout@v4
 
-      - name: Setup Python 3.12
+      - name: "🐍 Configurar Python 3.12"
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
           cache: "pip"
-          cache-dependency-path: |
-            requirements.txt
-            saucedemo-web-tests/requirements.txt
+          cache-dependency-path: requirements.txt
 
-      - name: Install dependencies
+      - name: "📦 Instalar dependências Python"
         working-directory: .
         run: pip install -r requirements.txt
 
-      - name: Setup Chrome
+      - name: "🌐 Setup Chrome"
         uses: browser-actions/setup-chrome@latest
         with:
           chrome-version: stable
 
-      - name: Setup ChromeDriver
+      - name: "🔧 Setup ChromeDriver"
         uses: nanasess/setup-chromedriver@master
 
-      - name: Verify browser versions
+      - name: "🔍 Verificar versões instaladas"
         run: |
           google-chrome --version
           chromedriver --version
 
-      - name: Create reports directory
+      - name: "📁 Criar diretório de relatórios"
         run: mkdir -p reports
 
-      - name: Run Web E2E tests
+      - name: "🧪 Executar testes Web E2E"
         run: |
           pytest tests/ \
             --html=reports/report.html \
@@ -150,35 +153,35 @@ jobs:
             -v \
             --tb=short
 
-      - name: Publish Web test results
+      - name: "📊 Publicar resumo – Web"
         if: always()
         run: |
-          echo "## Web E2E Test Results" >> $GITHUB_STEP_SUMMARY
+          echo "## 🌐 Resultado dos Testes Web E2E" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           if [ -f reports/report.json ]; then
             PASSED=$(python3 -c "import json; d=json.load(open('reports/report.json')); print(d['summary'].get('passed', 0))")
             FAILED=$(python3 -c "import json; d=json.load(open('reports/report.json')); print(d['summary'].get('failed', 0))")
-            TOTAL=$(python3 -c "import json; d=json.load(open('reports/report.json')); print(d['summary'].get('total', 0))")
+            TOTAL=$(python3  -c "import json; d=json.load(open('reports/report.json')); print(d['summary'].get('total',  0))")
             DURATION=$(python3 -c "import json; d=json.load(open('reports/report.json')); print(round(d.get('duration', 0), 2))")
-            echo "| Passed | Failed | Total | Duration |" >> $GITHUB_STEP_SUMMARY
-            echo "|--------|--------|-------|----------|" >> $GITHUB_STEP_SUMMARY
-            echo "| $PASSED | $FAILED | $TOTAL | ${DURATION}s |" >> $GITHUB_STEP_SUMMARY
+            echo "| ✅ Passaram | ❌ Falharam | 🔢 Total | ⏱ Duração |"    >> $GITHUB_STEP_SUMMARY
+            echo "|:-----------:|:-----------:|:--------:|:---------:|"     >> $GITHUB_STEP_SUMMARY
+            echo "| $PASSED     | $FAILED     | $TOTAL   | ${DURATION}s |"  >> $GITHUB_STEP_SUMMARY
           else
-            echo "Report file not found." >> $GITHUB_STEP_SUMMARY
+            echo "> ⚠️ Arquivo de relatório não encontrado." >> $GITHUB_STEP_SUMMARY
           fi
 
-      - name: Upload Web test report HTML
+      - name: "📤 Upload – Relatório HTML (Web)"
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: web-report-html-${{ github.run_number }}
+          name: "web-report-html-${{ github.run_number }}"
           path: saucedemo-web-tests/reports/report.html
           retention-days: 30
 
-      - name: Upload Web test report JSON
+      - name: "📤 Upload – Relatório JSON (Web)"
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: web-report-json-${{ github.run_number }}
+          name: "web-report-json-${{ github.run_number }}"
           path: saucedemo-web-tests/reports/report.json
           retention-days: 30
