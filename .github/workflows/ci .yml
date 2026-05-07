@@ -1,3 +1,4 @@
+
 on:
   push:
     branches:
@@ -40,6 +41,7 @@ jobs:
           cache-dependency-path: requirements.txt
 
       - name: "📦 Instalar dependências"
+        working-directory: .
         run: pip install -r requirements.txt
 
       - name: "📁 Criar diretório de relatórios"
@@ -121,6 +123,7 @@ jobs:
           cache-dependency-path: requirements.txt
 
       - name: "📦 Instalar dependências Python"
+        working-directory: .
         run: pip install -r requirements.txt
 
       - name: "🌐 Setup Chrome"
