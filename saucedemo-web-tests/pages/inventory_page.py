@@ -21,6 +21,7 @@ class InventoryPage(BasePage):
     _CART_LINK       = (By.CLASS_NAME, "shopping_cart_link")
     _BURGER_MENU     = (By.ID, "react-burger-menu-btn")
     _LOGOUT_LINK     = (By.ID, "logout_sidebar_link")
+    _ADD_TO_CART_BTN = (By.CSS_SELECTOR, ".inventory_item button")
 
     # ── Navigation ─────────────────────────────────────────────────────────
 
@@ -28,24 +29,51 @@ class InventoryPage(BasePage):
         super().open(self.PATH)
         return self
 
+    def wait_until_ready(self) -> "InventoryPage":
+        """
+        Aguarda a página do inventário estar completamente carregada.
+        Garante que os botões de 'Add to cart' estão interativos antes de usar.
+        """
+        self._wait.until(
+            EC.presence_of_element_located(self._ADD_TO_CART_BTN),
+            message="Inventory page did not load: Add to cart buttons not found"
+        )
+        self._wait.until(
+            EC.element_to_be_clickable(self._ADD_TO_CART_BTN),
+            message="Inventory page not ready: Add to cart button not clickable"
+        )
+        return self
+
     # ── Actions ────────────────────────────────────────────────────────────
 
     def add_item_to_cart_by_name(self, product_name: str) -> "InventoryPage":
         """Click 'Add to cart' for a product matched by exact name."""
+        self.wait_until_ready()
         items = self._find_all(*self._INVENTORY_ITEMS)
         for item in items:
             name_el = item.find_element(By.CLASS_NAME, "inventory_item_name")
             if name_el.text.strip() == product_name:
                 current_count = self.get_cart_item_count()
-                item.find_element(By.TAG_NAME, "button").click()
+                btn = item.find_element(By.TAG_NAME, "button")
+                self._wait.until(
+                    EC.element_to_be_clickable(btn),
+                    message=f"Add to cart button for '{product_name}' not clickable"
+                )
+                btn.click()
                 self._wait_for_cart_count(current_count + 1)
                 return self
         raise ValueError(f"Product '{product_name}' not found in inventory.")
 
     def add_first_item_to_cart(self) -> "InventoryPage":
+        self.wait_until_ready()
         current_count = self.get_cart_item_count()
         items = self._find_all(*self._INVENTORY_ITEMS)
-        items[0].find_element(By.TAG_NAME, "button").click()
+        btn = items[0].find_element(By.TAG_NAME, "button")
+        self._wait.until(
+            EC.element_to_be_clickable(btn),
+            message="Add to cart button for first item not clickable"
+        )
+        btn.click()
         self._wait_for_cart_count(current_count + 1)
         return self
 
@@ -64,8 +92,12 @@ class InventoryPage(BasePage):
     def logout(self) -> None:
         self._click(*self._BURGER_MENU)
         self._click(*self._LOGOUT_LINK)
-        # A página de login usa index.html
-        self._wait_for_url("index.html", "Login page did not load after logout")
+        # Após logout o SauceDemo redireciona para a raiz "/"
+        # A URL final é https://www.saucedemo.com/ sem index.html
+        self._wait.until(
+            lambda d: "inventory" not in d.current_url and "cart" not in d.current_url,
+            message="Login page did not load after logout"
+        )
 
     def select_sort(self, value: str) -> "InventoryPage":
         """Sort products. Values: 'az', 'za', 'lohi', 'hilo'."""

@@ -44,8 +44,7 @@ class TestLoginFailure:
     def test_wrong_password_error_message_content(self, login_page: LoginPage):
         login_page.open()
         login_page.login(settings.STANDARD_USER, "wrong_password")
-        error = login_page.get_error_message()
-        assert "Username and password do not match" in error
+        assert "Username and password do not match" in login_page.get_error_message()
 
     def test_empty_username_shows_error(self, login_page: LoginPage):
         login_page.open()
@@ -84,9 +83,7 @@ class TestLogout:
 
     def test_logout_redirects_to_login(self, authenticated_inventory: InventoryPage):
         authenticated_inventory.logout()
-        # logout() já aguarda index.html — verifica a URL correta da login page
-        WebAssertions.assert_url_contains(
-            authenticated_inventory._driver, "index.html"
-        )
+        # Após logout a URL não contém mais "inventory"
+        # Verifica que o botão de login está visível na tela
         login = LoginPage(authenticated_inventory._driver)
-        assert login.is_login_button_visible()
+        assert login.is_login_button_visible(), "Login button not visible after logout"
