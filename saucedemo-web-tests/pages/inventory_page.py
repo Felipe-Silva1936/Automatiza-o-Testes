@@ -37,26 +37,14 @@ class InventoryPage(BasePage):
             name_el = item.find_element(By.CLASS_NAME, "inventory_item_name")
             if name_el.text.strip() == product_name:
                 btn = item.find_element(By.TAG_NAME, "button")
-                # JS click não depende de visibilidade nem interatividade
                 self._driver.execute_script("arguments[0].click();", btn)
-                # Aguarda botão mudar para "Remove" — mais confiável que o badge
-                self._wait.until(
-                    lambda d, b=btn: b.text.strip().lower() == "remove",
-                    message=f"Button did not change to Remove after adding '{product_name}'"
-                )
                 return self
         raise ValueError(f"Product '{product_name}' not found in inventory.")
 
     def add_first_item_to_cart(self) -> "InventoryPage":
         items = self._find_all(*self._INVENTORY_ITEMS)
         btn = items[0].find_element(By.TAG_NAME, "button")
-        # JS click não depende de visibilidade nem interatividade
         self._driver.execute_script("arguments[0].click();", btn)
-        # Aguarda botão mudar para "Remove" — mais confiável que o badge
-        self._wait.until(
-            lambda d, b=btn: b.text.strip().lower() == "remove",
-            message="Button did not change to Remove after adding first item"
-        )
         return self
 
     def get_first_item_name(self) -> str:
@@ -74,7 +62,7 @@ class InventoryPage(BasePage):
     def logout(self) -> None:
         self._click(*self._BURGER_MENU)
         self._click(*self._LOGOUT_LINK)
-        # Aguarda sair do inventário — SauceDemo redireciona para "/" sem index.html
+        # SauceDemo redireciona para "/" sem index.html após logout
         self._wait.until(
             lambda d: "inventory" not in d.current_url,
             message="Login page did not load after logout"

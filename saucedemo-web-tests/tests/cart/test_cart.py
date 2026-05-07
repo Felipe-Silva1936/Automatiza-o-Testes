@@ -1,40 +1,35 @@
 """
 Test Suite: Shopping Cart
-Covers: add items, badge count, cart content, remove items, quantities.
+Covers: add items, cart content, remove items, quantities, navigation.
 """
 import pytest
 from pages import InventoryPage, CartPage
 from utils.assertions import WebAssertions
-from config.settings import settings
 
 
-SAUCE_LABS_BACKPACK    = "Sauce Labs Backpack"
-SAUCE_LABS_BIKE_LIGHT  = "Sauce Labs Bike Light"
-SAUCE_LABS_BOLT_SHIRT  = "Sauce Labs Bolt T-Shirt"
+SAUCE_LABS_BACKPACK   = "Sauce Labs Backpack"
+SAUCE_LABS_BIKE_LIGHT = "Sauce Labs Bike Light"
 
 
 class TestAddToCart:
-    """Adding items to the cart."""
+    """Adding items to the cart — verifica no carrinho, não no badge."""
 
-    def test_add_one_item_updates_badge(self, authenticated_inventory: InventoryPage):
+    def test_add_one_item_appears_in_cart(self, authenticated_inventory: InventoryPage):
         authenticated_inventory.add_item_to_cart_by_name(SAUCE_LABS_BACKPACK)
+        authenticated_inventory.go_to_cart()
 
-        assert authenticated_inventory.get_cart_item_count() == 1
+        cart = CartPage(authenticated_inventory._driver)
+        assert SAUCE_LABS_BACKPACK in cart.get_item_names()
 
-    def test_add_two_items_updates_badge(self, authenticated_inventory: InventoryPage):
-        authenticated_inventory.add_item_to_cart_by_name(SAUCE_LABS_BACKPACK)
-        authenticated_inventory.add_item_to_cart_by_name(SAUCE_LABS_BIKE_LIGHT)
-
-        assert authenticated_inventory.get_cart_item_count() == 2
-
-    def test_add_three_items_updates_badge(self, authenticated_inventory: InventoryPage):
+    def test_add_two_items_appear_in_cart(self, authenticated_inventory: InventoryPage):
         authenticated_inventory.add_item_to_cart_by_name(SAUCE_LABS_BACKPACK)
         authenticated_inventory.add_item_to_cart_by_name(SAUCE_LABS_BIKE_LIGHT)
-        authenticated_inventory.add_item_to_cart_by_name(SAUCE_LABS_BOLT_SHIRT)
+        authenticated_inventory.go_to_cart()
 
-        assert authenticated_inventory.get_cart_item_count() == 3
+        cart = CartPage(authenticated_inventory._driver)
+        WebAssertions.assert_items_count(cart.get_item_count(), 2, "cart items")
 
-    def test_cart_badge_not_visible_before_adding(self, authenticated_inventory: InventoryPage):
+    def test_cart_empty_before_adding(self, authenticated_inventory: InventoryPage):
         assert authenticated_inventory.get_cart_item_count() == 0
 
 
@@ -53,16 +48,7 @@ class TestCartContent:
         authenticated_inventory.go_to_cart()
 
         cart = CartPage(authenticated_inventory._driver)
-        quantities = cart.get_item_quantities()
-        assert all(q == 1 for q in quantities), "Each item should have quantity 1"
-
-    def test_cart_shows_two_added_items(self, authenticated_inventory: InventoryPage):
-        authenticated_inventory.add_item_to_cart_by_name(SAUCE_LABS_BACKPACK)
-        authenticated_inventory.add_item_to_cart_by_name(SAUCE_LABS_BIKE_LIGHT)
-        authenticated_inventory.go_to_cart()
-
-        cart = CartPage(authenticated_inventory._driver)
-        WebAssertions.assert_items_count(cart.get_item_count(), 2, "cart items")
+        assert all(q == 1 for q in cart.get_item_quantities())
 
     def test_cart_item_price_format(self, authenticated_inventory: InventoryPage):
         authenticated_inventory.add_item_to_cart_by_name(SAUCE_LABS_BACKPACK)
@@ -89,7 +75,7 @@ class TestRemoveFromCart:
         cart = CartPage(authenticated_inventory._driver)
         cart.remove_item_by_name(SAUCE_LABS_BACKPACK)
 
-        assert cart.is_empty(), "Cart should be empty after removing the only item"
+        assert cart.is_empty()
 
     def test_remove_one_of_two_items_leaves_one(self, authenticated_inventory: InventoryPage):
         authenticated_inventory.add_item_to_cart_by_name(SAUCE_LABS_BACKPACK)

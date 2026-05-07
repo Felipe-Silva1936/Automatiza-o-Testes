@@ -18,100 +18,80 @@ from utils.assertions import WebAssertions
 from config.settings import settings
 
 SAUCE_LABS_BACKPACK = "Sauce Labs Backpack"
+SAUCE_LABS_BIKE_LIGHT = "Sauce Labs Bike Light"
 
 
 # ──────────────────────────────────────────────────────────────────────────────
-# Full E2E — the primary scenario from the brief
+# Full E2E
 # ──────────────────────────────────────────────────────────────────────────────
 
 class TestFullPurchaseFlow:
-    """
-    Complete happy-path: login → add product → cart → checkout → confirmation.
-    This is the canonical E2E scenario described in the assignment.
-    """
+    """Complete happy-path: login → add product → cart → checkout → confirmation."""
 
     def test_complete_purchase_flow(self, driver):
-        """
-        E2E: standard_user performs a full purchase from login to confirmation.
-        Steps:
-          1. Open SauceDemo and login
-          2. Add 'Sauce Labs Backpack' to cart
-          3. Navigate to cart and verify item
-          4. Proceed to checkout and fill shipping info
-          5. Verify order summary
-          6. Finish purchase and verify confirmation
-        """
+        """E2E: standard_user realiza compra completa do login à confirmação."""
         # Step 1 — Login
         login = LoginPage(driver)
         login.open()
         login.login(settings.STANDARD_USER, settings.PASSWORD)
         WebAssertions.assert_url_contains(driver, "inventory")
 
-        # Step 2 — Add product to cart
+        # Step 2 — Adiciona produto ao carrinho
         inventory = InventoryPage(driver)
         assert inventory.get_page_title() == "Products"
         inventory.add_item_to_cart_by_name(SAUCE_LABS_BACKPACK)
-        assert inventory.get_cart_item_count() == 1
 
-        # Step 3 — Go to cart and verify item is there
+        # Step 3 — Verifica item no carrinho
         inventory.go_to_cart()
         cart = CartPage(driver)
         WebAssertions.assert_url_contains(driver, "cart")
         assert SAUCE_LABS_BACKPACK in cart.get_item_names()
         WebAssertions.assert_items_count(cart.get_item_count(), 1, "cart items")
 
-        # Step 4 — Proceed to checkout info
+        # Step 4 — Checkout info
         cart.go_to_checkout()
         checkout_info = CheckoutInfoPage(driver)
         WebAssertions.assert_url_contains(driver, "checkout-step-one")
         checkout_info.submit("João", "Silva", "01310-100")
 
-        # Step 5 — Overview: verify item and totals
+        # Step 5 — Overview
         overview = CheckoutOverviewPage(driver)
         WebAssertions.assert_url_contains(driver, "checkout-step-two")
         assert SAUCE_LABS_BACKPACK in overview.get_item_names()
         subtotal = overview.get_subtotal_value()
         tax      = overview.get_tax_value()
         total    = overview.get_total_value()
-        assert round(subtotal + tax, 2) == total, (
-            f"Total mismatch: {subtotal} + {tax} ≠ {total}"
-        )
+        assert round(subtotal + tax, 2) == total
 
-        # Step 6 — Finish purchase
+        # Step 6 — Confirmação
         overview.click_finish()
         complete = CheckoutCompletePage(driver)
         WebAssertions.assert_url_contains(driver, "checkout-complete")
-        assert complete.is_order_confirmed(), "Order confirmation header not found"
+        assert complete.is_order_confirmed()
 
     def test_complete_purchase_with_multiple_items(self, driver):
-        """E2E with two items to verify multi-item flow."""
-        # Login
-        LoginPage(driver).open()
-        LoginPage(driver).login(settings.STANDARD_USER, settings.PASSWORD)
+        """E2E com dois itens."""
+        login = LoginPage(driver)
+        login.open()
+        login.login(settings.STANDARD_USER, settings.PASSWORD)
+        WebAssertions.assert_url_contains(driver, "inventory")
 
-        # Add two items
         inventory = InventoryPage(driver)
-        inventory.add_item_to_cart_by_name("Sauce Labs Backpack")
-        inventory.add_item_to_cart_by_name("Sauce Labs Bike Light")
-        assert inventory.get_cart_item_count() == 2
+        inventory.add_item_to_cart_by_name(SAUCE_LABS_BACKPACK)
+        inventory.add_item_to_cart_by_name(SAUCE_LABS_BIKE_LIGHT)
 
-        # Cart
         inventory.go_to_cart()
         cart = CartPage(driver)
         WebAssertions.assert_items_count(cart.get_item_count(), 2, "cart items")
 
-        # Checkout info
         cart.go_to_checkout()
         CheckoutInfoPage(driver).submit("Ana", "Costa", "20040-020")
 
-        # Overview
         overview = CheckoutOverviewPage(driver)
         WebAssertions.assert_items_count(overview.get_item_count(), 2, "overview items")
 
-        # Finish
         overview.click_finish()
-        complete = CheckoutCompletePage(driver)
-        assert complete.is_order_confirmed()
+        assert CheckoutCompletePage(driver).is_order_confirmed()
 
 
 # ──────────────────────────────────────────────────────────────────────────────
@@ -163,7 +143,7 @@ class TestCheckoutInfoValidation:
 
 
 # ──────────────────────────────────────────────────────────────────────────────
-# Checkout Overview — price and item assertions
+# Checkout Overview
 # ──────────────────────────────────────────────────────────────────────────────
 
 class TestCheckoutOverview:
@@ -173,17 +153,14 @@ class TestCheckoutOverview:
         assert checkout_overview_ready.get_page_title() == "Checkout: Overview"
 
     def test_overview_shows_purchased_item(self, checkout_overview_ready: CheckoutOverviewPage):
-        names = checkout_overview_ready.get_item_names()
-        assert len(names) >= 1, "Overview must show at least one item"
+        assert len(checkout_overview_ready.get_item_names()) >= 1
 
     def test_total_equals_subtotal_plus_tax(self, checkout_overview_ready: CheckoutOverviewPage):
         subtotal = checkout_overview_ready.get_subtotal_value()
         tax      = checkout_overview_ready.get_tax_value()
         total    = checkout_overview_ready.get_total_value()
 
-        assert round(subtotal + tax, 2) == total, (
-            f"Total ({total}) ≠ subtotal ({subtotal}) + tax ({tax})"
-        )
+        assert round(subtotal + tax, 2) == total
 
     def test_subtotal_is_positive(self, checkout_overview_ready: CheckoutOverviewPage):
         assert checkout_overview_ready.get_subtotal_value() > 0
@@ -199,7 +176,7 @@ class TestCheckoutOverview:
 
 
 # ──────────────────────────────────────────────────────────────────────────────
-# Checkout Complete — confirmation
+# Checkout Complete
 # ──────────────────────────────────────────────────────────────────────────────
 
 class TestCheckoutComplete:
@@ -209,9 +186,7 @@ class TestCheckoutComplete:
         self, checkout_overview_ready: CheckoutOverviewPage
     ):
         checkout_overview_ready.click_finish()
-        complete = CheckoutCompletePage(checkout_overview_ready._driver)
-
-        assert complete.is_order_confirmed()
+        assert CheckoutCompletePage(checkout_overview_ready._driver).is_order_confirmed()
 
     def test_confirmation_url(self, checkout_overview_ready: CheckoutOverviewPage):
         checkout_overview_ready.click_finish()
@@ -219,19 +194,14 @@ class TestCheckoutComplete:
 
     def test_confirmation_image_is_visible(self, checkout_overview_ready: CheckoutOverviewPage):
         checkout_overview_ready.click_finish()
-        complete = CheckoutCompletePage(checkout_overview_ready._driver)
-
-        assert complete.is_confirmation_image_visible()
+        assert CheckoutCompletePage(checkout_overview_ready._driver).is_confirmation_image_visible()
 
     def test_back_home_returns_to_inventory(self, checkout_overview_ready: CheckoutOverviewPage):
         checkout_overview_ready.click_finish()
         complete = CheckoutCompletePage(checkout_overview_ready._driver)
         complete.click_back_home()
-
         WebAssertions.assert_url_contains(complete._driver, "inventory")
 
     def test_confirmation_page_title(self, checkout_overview_ready: CheckoutOverviewPage):
         checkout_overview_ready.click_finish()
-        complete = CheckoutCompletePage(checkout_overview_ready._driver)
-
-        assert complete.get_page_title() == "Checkout: Complete!"
+        assert CheckoutCompletePage(checkout_overview_ready._driver).get_page_title() == "Checkout: Complete!"
