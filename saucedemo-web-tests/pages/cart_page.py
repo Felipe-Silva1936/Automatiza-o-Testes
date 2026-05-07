@@ -1,4 +1,5 @@
 from selenium.webdriver.common.by import By
+from selenium.webdriver.support import expected_conditions as EC
 from pages.base_page import BasePage
 
 
@@ -43,9 +44,19 @@ class CartPage(BasePage):
 
     def go_to_checkout(self) -> None:
         self._click(*self._CHECKOUT_BUTTON)
+        # Aguarda navegação para o checkout antes de retornar
+        self._wait.until(
+            EC.url_contains("checkout-step-one"),
+            message="Checkout info page did not load after clicking checkout button"
+        )
 
     def continue_shopping(self) -> None:
         self._click(*self._CONTINUE_SHOPPING)
+        # Aguarda retorno ao inventário
+        self._wait.until(
+            EC.url_contains("inventory"),
+            message="Inventory page did not load after clicking continue shopping"
+        )
 
     # ── Queries ────────────────────────────────────────────────────────────
 

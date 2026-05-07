@@ -1,5 +1,5 @@
 from selenium.webdriver.common.by import By
-from selenium.webdriver.remote.webelement import WebElement
+from selenium.webdriver.support import expected_conditions as EC
 from pages.base_page import BasePage
 
 
@@ -36,14 +36,17 @@ class InventoryPage(BasePage):
         for item in items:
             name_el = item.find_element(By.CLASS_NAME, "inventory_item_name")
             if name_el.text.strip() == product_name:
-                btn = item.find_element(By.TAG_NAME, "button")
-                btn.click()
+                current_count = self.get_cart_item_count()
+                item.find_element(By.TAG_NAME, "button").click()
+                self._wait_for_cart_count(current_count + 1)
                 return self
         raise ValueError(f"Product '{product_name}' not found in inventory.")
 
     def add_first_item_to_cart(self) -> "InventoryPage":
+        current_count = self.get_cart_item_count()
         items = self._find_all(*self._INVENTORY_ITEMS)
         items[0].find_element(By.TAG_NAME, "button").click()
+        self._wait_for_cart_count(current_count + 1)
         return self
 
     def get_first_item_name(self) -> str:
@@ -56,10 +59,19 @@ class InventoryPage(BasePage):
 
     def go_to_cart(self) -> None:
         self._click(*self._CART_LINK)
+        self._wait.until(
+            EC.url_contains("cart"),
+            message="Cart page did not load after clicking cart link"
+        )
 
     def logout(self) -> None:
         self._click(*self._BURGER_MENU)
         self._click(*self._LOGOUT_LINK)
+        # A página de login usa index.html — diferente de inventory/cart
+        self._wait.until(
+            EC.url_contains("index.html"),
+            message="Login page did not load after logout"
+        )
 
     def select_sort(self, value: str) -> "InventoryPage":
         """Sort products. Values: 'az', 'za', 'lohi', 'hilo'."""
@@ -86,3 +98,21 @@ class InventoryPage(BasePage):
 
     def get_item_count(self) -> int:
         return len(self._find_all(*self._INVENTORY_ITEMS))
+
+    # ── Private helpers ────────────────────────────────────────────────────
+
+    def _wait_for_cart_count(self, expected: int) -> None:
+        """Aguarda o badge do carrinho refletir a contagem esperada."""
+        def badge_shows_count(driver):
+            badges = driver.find_elements(By.CLASS_NAME, "shopping_cart_badge")
+            if not badges:
+                return expected == 0
+            try:
+                return int(badges[0].text) == expected
+            except ValueError:
+                return False
+
+        self._wait.until(
+            badge_shows_count,
+            message=f"Cart badge did not update to {expected}"
+        )

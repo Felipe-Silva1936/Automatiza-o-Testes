@@ -51,6 +51,16 @@ class BasePage:
         )
 
     def _find_all(self, by: str, locator: str) -> list[WebElement]:
+        """
+        Aguarda pelo menos um elemento antes de retornar a lista.
+        Evita retorno de lista vazia em páginas SPA que carregam dinamicamente.
+        """
+        try:
+            self._wait.until(
+                EC.presence_of_element_located((by, locator))
+            )
+        except Exception:
+            pass  # retorna lista vazia se não encontrar nenhum
         return self._driver.find_elements(by, locator)
 
     # ── Interactions ───────────────────────────────────────────────────────
@@ -66,8 +76,15 @@ class BasePage:
     def _get_text(self, by: str, locator: str) -> str:
         return self._find_visible(by, locator).text.strip()
 
-    def _is_visible(self, by: str, locator: str) -> bool:
+    def _is_visible(self, by: str, locator: str, timeout: int = 3) -> bool:
+        """
+        Usa timeout curto para verificações booleanas.
+        Evita esperar o timeout cheio em assertions negativas.
+        """
         try:
-            return self._find_visible(by, locator).is_displayed()
+            WebDriverWait(self._driver, timeout).until(
+                EC.visibility_of_element_located((by, locator))
+            )
+            return True
         except Exception:
             return False
