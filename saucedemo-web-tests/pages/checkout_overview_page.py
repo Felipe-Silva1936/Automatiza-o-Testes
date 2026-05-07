@@ -10,24 +10,32 @@ class CheckoutOverviewPage(BasePage):
     PATH = "/checkout-step-two.html"
 
     # ── Locators ───────────────────────────────────────────────────────────
-    _PAGE_TITLE     = (By.CLASS_NAME, "title")
-    _CART_ITEMS     = (By.CLASS_NAME, "cart_item")
-    _ITEM_NAMES     = (By.CLASS_NAME, "inventory_item_name")
-    _ITEM_PRICES    = (By.CLASS_NAME, "inventory_item_price")
-    _SUBTOTAL       = (By.CLASS_NAME, "summary_subtotal_label")
-    _TAX            = (By.CLASS_NAME, "summary_tax_label")
-    _TOTAL          = (By.CLASS_NAME, "summary_total_label")
-    _FINISH_BTN     = (By.ID, "finish")
-    _CANCEL_BTN     = (By.ID, "cancel")
-    _PAYMENT_INFO   = (By.CLASS_NAME, "summary_value_label")
+    _PAGE_TITLE   = (By.CLASS_NAME, "title")
+    _CART_ITEMS   = (By.CLASS_NAME, "cart_item")
+    _ITEM_NAMES   = (By.CLASS_NAME, "inventory_item_name")
+    _ITEM_PRICES  = (By.CLASS_NAME, "inventory_item_price")
+    _SUBTOTAL     = (By.CLASS_NAME, "summary_subtotal_label")
+    _TAX          = (By.CLASS_NAME, "summary_tax_label")
+    _TOTAL        = (By.CLASS_NAME, "summary_total_label")
+    _FINISH_BTN   = (By.ID, "finish")
+    _CANCEL_BTN   = (By.ID, "cancel")
+    _PAYMENT_INFO = (By.CLASS_NAME, "summary_value_label")
 
     # ── Actions ────────────────────────────────────────────────────────────
 
     def click_finish(self) -> None:
         self._click(*self._FINISH_BTN)
+        self._wait_for_url(
+            "checkout-complete",
+            "Checkout complete page did not load after clicking finish"
+        )
 
     def click_cancel(self) -> None:
         self._click(*self._CANCEL_BTN)
+        self._wait_for_url(
+            "inventory",
+            "Inventory page did not load after cancelling overview"
+        )
 
     # ── Queries ────────────────────────────────────────────────────────────
 
@@ -51,13 +59,10 @@ class CheckoutOverviewPage(BasePage):
 
     def get_subtotal_value(self) -> float:
         """Extract numeric value from 'Item total: $X.XX'."""
-        text = self.get_subtotal_text()
-        return float(text.split("$")[-1])
+        return float(self.get_subtotal_text().split("$")[-1])
 
     def get_tax_value(self) -> float:
-        text = self.get_tax_text()
-        return float(text.split("$")[-1])
+        return float(self.get_tax_text().split("$")[-1])
 
     def get_total_value(self) -> float:
-        text = self.get_total_text()
-        return float(text.split("$")[-1])
+        return float(self.get_total_text().split("$")[-1])

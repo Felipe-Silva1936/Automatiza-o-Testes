@@ -1,5 +1,4 @@
 from selenium.webdriver.common.by import By
-from selenium.webdriver.support import expected_conditions as EC
 from pages.base_page import BasePage
 
 
@@ -12,14 +11,14 @@ class CartPage(BasePage):
     PATH = "/cart.html"
 
     # ── Locators ───────────────────────────────────────────────────────────
-    _PAGE_TITLE         = (By.CLASS_NAME, "title")
-    _CART_ITEMS         = (By.CLASS_NAME, "cart_item")
-    _ITEM_NAME          = (By.CLASS_NAME, "inventory_item_name")
-    _ITEM_PRICE         = (By.CLASS_NAME, "inventory_item_price")
-    _ITEM_QUANTITY      = (By.CLASS_NAME, "cart_quantity")
-    _REMOVE_BUTTON      = (By.CSS_SELECTOR, ".cart_item button")
-    _CHECKOUT_BUTTON    = (By.ID, "checkout")
-    _CONTINUE_SHOPPING  = (By.ID, "continue-shopping")
+    _PAGE_TITLE        = (By.CLASS_NAME, "title")
+    _CART_ITEMS        = (By.CLASS_NAME, "cart_item")
+    _ITEM_NAME         = (By.CLASS_NAME, "inventory_item_name")
+    _ITEM_PRICE        = (By.CLASS_NAME, "inventory_item_price")
+    _ITEM_QUANTITY     = (By.CLASS_NAME, "cart_quantity")
+    _REMOVE_BUTTON     = (By.CSS_SELECTOR, ".cart_item button")
+    _CHECKOUT_BUTTON   = (By.ID, "checkout")
+    _CONTINUE_SHOPPING = (By.ID, "continue-shopping")
 
     # ── Navigation ─────────────────────────────────────────────────────────
 
@@ -44,18 +43,16 @@ class CartPage(BasePage):
 
     def go_to_checkout(self) -> None:
         self._click(*self._CHECKOUT_BUTTON)
-        # Aguarda navegação para o checkout antes de retornar
-        self._wait.until(
-            EC.url_contains("checkout-step-one"),
-            message="Checkout info page did not load after clicking checkout button"
+        self._wait_for_url(
+            "checkout-step-one",
+            "Checkout info page did not load after clicking checkout button"
         )
 
     def continue_shopping(self) -> None:
         self._click(*self._CONTINUE_SHOPPING)
-        # Aguarda retorno ao inventário
-        self._wait.until(
-            EC.url_contains("inventory"),
-            message="Inventory page did not load after clicking continue shopping"
+        self._wait_for_url(
+            "inventory",
+            "Inventory page did not load after clicking continue shopping"
         )
 
     # ── Queries ────────────────────────────────────────────────────────────

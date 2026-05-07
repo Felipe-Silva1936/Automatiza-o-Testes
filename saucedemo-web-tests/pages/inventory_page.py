@@ -12,15 +12,15 @@ class InventoryPage(BasePage):
     PATH = "/inventory.html"
 
     # ── Locators ───────────────────────────────────────────────────────────
-    _PAGE_TITLE         = (By.CLASS_NAME, "title")
-    _INVENTORY_ITEMS    = (By.CLASS_NAME, "inventory_item")
-    _ITEM_NAME          = (By.CLASS_NAME, "inventory_item_name")
-    _ITEM_PRICE         = (By.CLASS_NAME, "inventory_item_price")
-    _SORT_DROPDOWN      = (By.CLASS_NAME, "product_sort_container")
-    _CART_BADGE         = (By.CLASS_NAME, "shopping_cart_badge")
-    _CART_LINK          = (By.CLASS_NAME, "shopping_cart_link")
-    _BURGER_MENU        = (By.ID, "react-burger-menu-btn")
-    _LOGOUT_LINK        = (By.ID, "logout_sidebar_link")
+    _PAGE_TITLE      = (By.CLASS_NAME, "title")
+    _INVENTORY_ITEMS = (By.CLASS_NAME, "inventory_item")
+    _ITEM_NAME       = (By.CLASS_NAME, "inventory_item_name")
+    _ITEM_PRICE      = (By.CLASS_NAME, "inventory_item_price")
+    _SORT_DROPDOWN   = (By.CLASS_NAME, "product_sort_container")
+    _CART_BADGE      = (By.CLASS_NAME, "shopping_cart_badge")
+    _CART_LINK       = (By.CLASS_NAME, "shopping_cart_link")
+    _BURGER_MENU     = (By.ID, "react-burger-menu-btn")
+    _LOGOUT_LINK     = (By.ID, "logout_sidebar_link")
 
     # ── Navigation ─────────────────────────────────────────────────────────
 
@@ -59,19 +59,13 @@ class InventoryPage(BasePage):
 
     def go_to_cart(self) -> None:
         self._click(*self._CART_LINK)
-        self._wait.until(
-            EC.url_contains("cart"),
-            message="Cart page did not load after clicking cart link"
-        )
+        self._wait_for_url("cart", "Cart page did not load after clicking cart link")
 
     def logout(self) -> None:
         self._click(*self._BURGER_MENU)
         self._click(*self._LOGOUT_LINK)
-        # A página de login usa index.html — diferente de inventory/cart
-        self._wait.until(
-            EC.url_contains("index.html"),
-            message="Login page did not load after logout"
-        )
+        # A página de login usa index.html
+        self._wait_for_url("index.html", "Login page did not load after logout")
 
     def select_sort(self, value: str) -> "InventoryPage":
         """Sort products. Values: 'az', 'za', 'lohi', 'hilo'."""

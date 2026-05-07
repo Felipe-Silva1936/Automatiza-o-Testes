@@ -10,16 +10,20 @@ class CheckoutCompletePage(BasePage):
     PATH = "/checkout-complete.html"
 
     # ── Locators ───────────────────────────────────────────────────────────
-    _PAGE_TITLE     = (By.CLASS_NAME, "title")
+    _PAGE_TITLE      = (By.CLASS_NAME, "title")
     _COMPLETE_HEADER = (By.CLASS_NAME, "complete-header")
-    _COMPLETE_TEXT  = (By.CLASS_NAME, "complete-text")
-    _PONY_EXPRESS   = (By.CLASS_NAME, "pony_express")
-    _BACK_HOME_BTN  = (By.ID, "back-to-products")
+    _COMPLETE_TEXT   = (By.CLASS_NAME, "complete-text")
+    _PONY_EXPRESS    = (By.CLASS_NAME, "pony_express")
+    _BACK_HOME_BTN   = (By.ID, "back-to-products")
 
     # ── Actions ────────────────────────────────────────────────────────────
 
     def click_back_home(self) -> None:
         self._click(*self._BACK_HOME_BTN)
+        self._wait_for_url(
+            "inventory",
+            "Inventory page did not load after clicking back home"
+        )
 
     # ── Queries ────────────────────────────────────────────────────────────
 

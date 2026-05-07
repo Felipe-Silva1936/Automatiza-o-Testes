@@ -53,14 +53,12 @@ class BasePage:
     def _find_all(self, by: str, locator: str) -> list[WebElement]:
         """
         Aguarda pelo menos um elemento antes de retornar a lista.
-        Evita retorno de lista vazia em páginas SPA que carregam dinamicamente.
+        Evita lista vazia em páginas SPA que carregam dinamicamente.
         """
         try:
-            self._wait.until(
-                EC.presence_of_element_located((by, locator))
-            )
+            self._wait.until(EC.presence_of_element_located((by, locator)))
         except Exception:
-            pass  # retorna lista vazia se não encontrar nenhum
+            pass
         return self._driver.find_elements(by, locator)
 
     # ── Interactions ───────────────────────────────────────────────────────
@@ -88,3 +86,10 @@ class BasePage:
             return True
         except Exception:
             return False
+
+    def _wait_for_url(self, fragment: str, message: str = "") -> None:
+        """Aguarda a URL conter o fragmento especificado."""
+        self._wait.until(
+            EC.url_contains(fragment),
+            message=message or f"URL did not contain '{fragment}'"
+        )
