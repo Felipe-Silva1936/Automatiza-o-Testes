@@ -33,27 +33,23 @@ class CartPage(BasePage):
         for item in items:
             name_el = item.find_element(By.CLASS_NAME, "inventory_item_name")
             if name_el.text.strip() == product_name:
-                btn = item.find_element(By.TAG_NAME, "button")
-                self._driver.execute_script("arguments[0].click();", btn)
+                item.find_element(By.TAG_NAME, "button").click()
                 return self
         raise ValueError(f"Product '{product_name}' not found in cart.")
 
     def remove_first_item(self) -> "CartPage":
-        btn = self._find(*self._REMOVE_BUTTON)
-        self._driver.execute_script("arguments[0].click();", btn)
+        self._click(*self._REMOVE_BUTTON)
         return self
 
     def go_to_checkout(self) -> None:
-        btn = self._find_clickable(*self._CHECKOUT_BUTTON)
-        self._driver.execute_script("arguments[0].click();", btn)
+        self._click(*self._CHECKOUT_BUTTON)
         self._wait_for_url(
             "checkout-step-one",
             "Checkout info page did not load after clicking checkout button"
         )
 
     def continue_shopping(self) -> None:
-        btn = self._find_clickable(*self._CONTINUE_SHOPPING)
-        self._driver.execute_script("arguments[0].click();", btn)
+        self._click(*self._CONTINUE_SHOPPING)
         self._wait_for_url(
             "inventory",
             "Inventory page did not load after clicking continue shopping"
