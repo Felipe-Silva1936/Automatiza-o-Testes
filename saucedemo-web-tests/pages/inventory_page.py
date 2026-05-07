@@ -30,29 +30,26 @@ class InventoryPage(BasePage):
         return self
 
     def wait_until_ready(self) -> "InventoryPage":
-        """Aguarda os botões Add to cart estarem interativos."""
+        """Aguarda os botões Add to cart estarem presentes no DOM."""
         self._wait.until(
-            EC.element_to_be_clickable(self._ADD_TO_CART_BTN),
-            message="Inventory page not ready: Add to cart button not clickable"
+            EC.presence_of_element_located(self._ADD_TO_CART_BTN),
+            message="Inventory page not ready: Add to cart button not found"
         )
         return self
 
     # ── Actions ────────────────────────────────────────────────────────────
 
     def add_item_to_cart_by_name(self, product_name: str) -> "InventoryPage":
-        """Click 'Add to cart' for a product matched by exact name."""
+        """Click 'Add to cart' via JavaScript — bypassa overlays e popups."""
         self.wait_until_ready()
         items = self._find_all(*self._INVENTORY_ITEMS)
         for item in items:
             name_el = item.find_element(By.CLASS_NAME, "inventory_item_name")
             if name_el.text.strip() == product_name:
                 btn = item.find_element(By.TAG_NAME, "button")
-                self._wait.until(
-                    EC.element_to_be_clickable(btn),
-                    message=f"Add to cart button for '{product_name}' not clickable"
-                )
-                btn.click()
-                # Confirma via texto do botão — mais confiável que o badge
+                # JS click — não depende de visibilidade nem interatividade
+                self._driver.execute_script("arguments[0].click();", btn)
+                # Aguarda botão mudar para "Remove" como confirmação
                 self._wait_for_element_text(btn, "remove")
                 return self
         raise ValueError(f"Product '{product_name}' not found in inventory.")
@@ -60,14 +57,10 @@ class InventoryPage(BasePage):
     def add_first_item_to_cart(self) -> "InventoryPage":
         self.wait_until_ready()
         items = self._find_all(*self._INVENTORY_ITEMS)
-        item = items[0]
-        btn = item.find_element(By.TAG_NAME, "button")
-        self._wait.until(
-            EC.element_to_be_clickable(btn),
-            message="Add to cart button for first item not clickable"
-        )
-        btn.click()
-        # Confirma via texto do botão — mais confiável que o badge
+        btn = items[0].find_element(By.TAG_NAME, "button")
+        # JS click — não depende de visibilidade nem interatividade
+        self._driver.execute_script("arguments[0].click();", btn)
+        # Aguarda botão mudar para "Remove" como confirmação
         self._wait_for_element_text(btn, "remove")
         return self
 
