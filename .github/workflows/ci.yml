@@ -146,7 +146,6 @@ jobs:
       - name: "🧪 Executar testes Web E2E"
         run: |
           pytest tests/ \
-            -n 2 \
             --html=reports/report.html \
             --self-contained-html \
             --json-report \
