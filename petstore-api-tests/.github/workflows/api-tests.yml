@@ -1,0 +1,89 @@
+name: "CI – API Tests (Petstore)"
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+  pull_request:
+    branches:
+      - main
+  schedule:
+    - cron: "0 6 * * 1-5"   # Segunda a sexta às 06:00 UTC
+  workflow_dispatch:          # Permite execução manual pela UI do GitHub
+
+defaults:
+  run:
+    working-directory: .
+
+jobs:
+  # ────────────────────────────────────────────────────────────────────────────
+  api-tests:
+  # ────────────────────────────────────────────────────────────────────────────
+    name: "Executar Testes de API"
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    env:
+      BASE_URL: ${{ vars.BASE_URL || 'https://petstore.swagger.io/v2' }}
+      TIMEOUT:  ${{ vars.TIMEOUT  || '30' }}
+
+    steps:
+
+      - name: "📥 Checkout do repositório"
+        uses: actions/checkout@v4
+
+      - name: "🐍 Configurar Python 3.12"
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+
+      - name: "📦 Instalar dependências"
+        run: pip install -r requirements.txt
+
+      - name: "📁 Criar diretório de relatórios"
+        run: mkdir -p reports
+
+      - name: "🧪 Executar testes de API"
+        run: |
+          pytest tests/ \
+            --html=reports/report.html \
+            --self-contained-html \
+            --json-report \
+            --json-report-file=reports/report.json \
+            -v \
+            --tb=short
+
+      - name: "📊 Publicar resumo dos testes"
+        if: always()
+        run: |
+          echo "## 🧪 Resultado dos Testes de API" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          if [ -f reports/report.json ]; then
+            PASSED=$(python3 -c "import json; d=json.load(open('reports/report.json')); print(d['summary'].get('passed', 0))")
+            FAILED=$(python3 -c "import json; d=json.load(open('reports/report.json')); print(d['summary'].get('failed', 0))")
+            TOTAL=$(python3  -c "import json; d=json.load(open('reports/report.json')); print(d['summary'].get('total',  0))")
+            DURATION=$(python3 -c "import json; d=json.load(open('reports/report.json')); print(round(d.get('duration', 0), 2))")
+            echo "| ✅ Passaram | ❌ Falharam | 🔢 Total | ⏱ Duração |"    >> $GITHUB_STEP_SUMMARY
+            echo "|:-----------:|:-----------:|:--------:|:---------:|"     >> $GITHUB_STEP_SUMMARY
+            echo "| $PASSED     | $FAILED     | $TOTAL   | ${DURATION}s |"  >> $GITHUB_STEP_SUMMARY
+          else
+            echo "> ⚠️ Arquivo de relatório não encontrado." >> $GITHUB_STEP_SUMMARY
+          fi
+
+      - name: "📤 Upload – Relatório HTML"
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: "api-report-html-${{ github.run_number }}"
+          path: reports/report.html
+          retention-days: 30
+
+      - name: "📤 Upload – Relatório JSON"
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: "api-report-json-${{ github.run_number }}"
+          path: reports/report.json
+          retention-days: 30
