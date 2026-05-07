@@ -14,18 +14,13 @@ class DriverFactory:
         options = ChromeOptions()
 
         if settings.HEADLESS:
-            options.add_argument("--headless=new")
+            options.add_argument("--headless")
 
         options.add_argument("--no-sandbox")
         options.add_argument("--disable-dev-shm-usage")
         options.add_argument("--disable-gpu")
         options.add_argument("--window-size=1920,1080")
-        options.add_argument("--disable-extensions")
-        options.add_argument("--disable-infobars")
-        options.add_experimental_option("excludeSwitches", ["enable-automation"])
-        options.add_experimental_option("useAutomationExtension", False)
 
-        # Selenium Manager (nativo do Selenium 4.6+) gerencia o driver automaticamente
         driver = webdriver.Chrome(options=options)  # ← Chrome com C maiúsculo
         driver.implicitly_wait(settings.IMPLICIT_WAIT)
         driver.set_page_load_timeout(settings.PAGE_LOAD_TIMEOUT)
