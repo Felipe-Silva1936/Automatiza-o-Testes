@@ -41,6 +41,7 @@ class DriverFactory:
         prefs = {
             "credentials_enable_service": False,
             "profile.password_manager_enabled": False,
+            "profile.password_manager_leak_detection": False,
             "profile.default_content_setting_values.notifications": 2,
             "profile.default_content_setting_values.automatic_downloads": 1,
         }
@@ -48,7 +49,12 @@ class DriverFactory:
 
         # ── Selenium Manager cuida do driver automaticamente ───────────────
         driver = webdriver.Chrome(options=options)
-        driver.implicitly_wait(settings.IMPLICIT_WAIT)
+
+        # ── IMPORTANTE: implicit_wait ZERADO ──────────────────────────────
+        # Usar implicit_wait junto com WebDriverWait causa comportamento
+        # imprevisível. Todo o controle de espera é feito via WebDriverWait
+        # explícito no BasePage.
+        driver.implicitly_wait(0)
         driver.set_page_load_timeout(settings.PAGE_LOAD_TIMEOUT)
 
         return driver

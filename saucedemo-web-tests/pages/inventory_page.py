@@ -1,6 +1,5 @@
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.remote.webelement import WebElement
 from pages.base_page import BasePage
 
 
@@ -31,10 +30,7 @@ class InventoryPage(BasePage):
         return self
 
     def wait_until_ready(self) -> "InventoryPage":
-        """
-        Aguarda a página estar completamente carregada.
-        Garante que os botões Add to cart estão interativos.
-        """
+        """Aguarda os botões Add to cart estarem interativos."""
         self._wait.until(
             EC.element_to_be_clickable(self._ADD_TO_CART_BTN),
             message="Inventory page not ready: Add to cart button not clickable"
@@ -56,11 +52,8 @@ class InventoryPage(BasePage):
                     message=f"Add to cart button for '{product_name}' not clickable"
                 )
                 btn.click()
-                # Aguarda o botão mudar para "Remove" — confirma que o item foi adicionado
-                self._wait.until(
-                    lambda d: item.find_element(By.TAG_NAME, "button").text.strip().lower() == "remove",
-                    message=f"Button did not change to 'Remove' after adding '{product_name}'"
-                )
+                # Confirma via texto do botão — mais confiável que o badge
+                self._wait_for_element_text(btn, "remove")
                 return self
         raise ValueError(f"Product '{product_name}' not found in inventory.")
 
@@ -74,11 +67,8 @@ class InventoryPage(BasePage):
             message="Add to cart button for first item not clickable"
         )
         btn.click()
-        # Aguarda o botão mudar para "Remove" — confirma que o item foi adicionado
-        self._wait.until(
-            lambda d: item.find_element(By.TAG_NAME, "button").text.strip().lower() == "remove",
-            message="Button did not change to 'Remove' after adding first item"
-        )
+        # Confirma via texto do botão — mais confiável que o badge
+        self._wait_for_element_text(btn, "remove")
         return self
 
     def get_first_item_name(self) -> str:
@@ -96,7 +86,7 @@ class InventoryPage(BasePage):
     def logout(self) -> None:
         self._click(*self._BURGER_MENU)
         self._click(*self._LOGOUT_LINK)
-        self._wait.until(
+        self._long_wait.until(
             lambda d: "inventory" not in d.current_url and "cart" not in d.current_url,
             message="Login page did not load after logout"
         )
