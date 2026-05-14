@@ -8,12 +8,6 @@ Este repositório contém automações de teste para duas aplicações:
 - **Petstore API Tests**: Testes de API REST para a Petstore API, cobrindo operações de pets, usuários e loja.
 - **SauceDemo Web Tests**: Testes E2E para o site SauceDemo usando Selenium e Page Object Model, simulando fluxo completo de compra.
 
-## Tecnologias Utilizadas
-- **Pytest**: Framework de testes
-- **Selenium**: Para automação web
-- **Webdriver Manager**: Gerenciamento de drivers
-- **Allure/Pytest-HTML**: Relatórios de teste
-
 ## Pré-requisitos
 - Python 3.11+ (recomendado 3.13)
 - Git
@@ -116,6 +110,14 @@ Automatiza-o-Testes/
 │   └── requirements.txt
 └── README.md
 ```
+
+## Tecnologias Utilizadas
+- **Python**: Linguagem principal
+- **Pytest**: Framework de testes
+- **Requests**: Para testes de API
+- **Selenium**: Para automação web
+- **Webdriver Manager**: Gerenciamento de drivers
+- **Allure/Pytest-HTML**: Relatórios de teste
 
 ## Notas
 - Para testes web, certifique-se de que o ChromeDriver está instalado automaticamente via webdriver-manager.

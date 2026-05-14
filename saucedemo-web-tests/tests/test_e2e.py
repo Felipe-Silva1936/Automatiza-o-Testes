@@ -1,4 +1,8 @@
-
+"""
+Test Suite: E2E Purchase Flow
+Cobre o fluxo completo de compra do SauceDemo:
+  Login → Adiciona produto → Carrinho → Checkout → Confirmação
+"""
 from pages import (
     LoginPage,
     InventoryPage,
@@ -10,10 +14,25 @@ from pages import (
 from utils.assertions import WebAssertions
 from config.settings import settings
 
+# ── Constantes de produto ─────────────────────────────────────────────────────
+SAUCE_LABS_BACKPACK   = "Sauce Labs Backpack"
+SAUCE_LABS_BIKE_LIGHT = "Sauce Labs Bike Light"
+
 class TestFullPurchaseFlow:
+    """Fluxo completo de compra — do login à confirmação."""
 
     def test_complete_purchase_flow(self, driver):
-      
+        """
+        E2E: standard_user realiza uma compra completa.
+
+        Steps:
+          1. Abre o SauceDemo e faz login
+          2. Adiciona 'Sauce Labs Backpack' ao carrinho
+          3. Navega para o carrinho e verifica o item
+          4. Inicia o checkout e preenche os dados de entrega
+          5. Verifica o resumo do pedido e o cálculo do total
+          6. Finaliza a compra e verifica a confirmação
+        """
         # Step 1 — Login
         login = LoginPage(driver)
         login.open()
@@ -54,3 +73,34 @@ class TestFullPurchaseFlow:
         complete = CheckoutCompletePage(driver)
         WebAssertions.assert_url_contains(driver, "checkout-complete")
         assert complete.is_order_confirmed(), "Confirmação de pedido não encontrada"
+
+    def test_purchase_flow_with_two_items(self, driver):
+        """E2E: fluxo completo com dois produtos no carrinho."""
+        # Login
+        login = LoginPage(driver)
+        login.open()
+        login.login(settings.STANDARD_USER, settings.PASSWORD)
+
+        # Adiciona dois produtos
+        inventory = InventoryPage(driver)
+        inventory.add_item_to_cart_by_name(SAUCE_LABS_BACKPACK)
+        inventory.add_item_to_cart_by_name(SAUCE_LABS_BIKE_LIGHT)
+        assert inventory.get_cart_item_count() == 2
+
+        # Carrinho
+        inventory.go_to_cart()
+        cart = CartPage(driver)
+        WebAssertions.assert_items_count(cart.get_item_count(), 2, "cart items")
+
+        # Checkout
+        cart.go_to_checkout()
+        CheckoutInfoPage(driver).submit("Ana", "Costa", "20040-020")
+
+        # Overview
+        overview = CheckoutOverviewPage(driver)
+        WebAssertions.assert_items_count(overview.get_item_count(), 2, "overview items")
+        assert round(overview.get_subtotal_value() + overview.get_tax_value(), 2) == overview.get_total_value()
+
+        # Confirmação
+        overview.click_finish()
+        assert CheckoutCompletePage(driver).is_order_confirmed()
