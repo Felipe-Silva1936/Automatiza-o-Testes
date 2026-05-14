@@ -28,6 +28,9 @@ copie o caminho da pasta usando botão direito e copiando caminho no arquivo pet
 ```bash
 cd <caminho copiado>
 
+# Criar o ambiente virtual
+py -m venv .venv
+
 # Ativar o ambiente virtual
 & "..\.venv\Scripts\Activate.ps1"
 
@@ -64,6 +67,9 @@ Navegue para a pasta do projeto web e configure o ambiente:
 copie o caminho da pasta usando botão direito e copiando caminho no arquivo saucedemo-web-tests
 ```bash
 cd <caminho copiado>
+
+# Criar o ambiente virtual
+py -m venv .venv
 
 # Ativar o ambiente virtual
 & "..\.venv\Scripts\Activate.ps1"
