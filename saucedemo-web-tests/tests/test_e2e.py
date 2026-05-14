@@ -1,8 +1,3 @@
-"""
-Test Suite: E2E Purchase Flow
-Cobre o fluxo completo de compra do SauceDemo:
-  Login → Adiciona produto → Carrinho → Checkout → Confirmação
-"""
 from pages import (
     LoginPage,
     InventoryPage,
@@ -14,25 +9,13 @@ from pages import (
 from utils.assertions import WebAssertions
 from config.settings import settings
 
-# ── Constantes de produto ─────────────────────────────────────────────────────
 SAUCE_LABS_BACKPACK   = "Sauce Labs Backpack"
 SAUCE_LABS_BIKE_LIGHT = "Sauce Labs Bike Light"
 
 class TestFullPurchaseFlow:
-    """Fluxo completo de compra — do login à confirmação."""
-
+    
     def test_complete_purchase_flow(self, driver):
-        """
-        E2E: standard_user realiza uma compra completa.
 
-        Steps:
-          1. Abre o SauceDemo e faz login
-          2. Adiciona 'Sauce Labs Backpack' ao carrinho
-          3. Navega para o carrinho e verifica o item
-          4. Inicia o checkout e preenche os dados de entrega
-          5. Verifica o resumo do pedido e o cálculo do total
-          6. Finaliza a compra e verifica a confirmação
-        """
         # Step 1 — Login
         login = LoginPage(driver)
         login.open()
