@@ -10,7 +10,6 @@ from utils import ResponseAssertions, DataGenerator
 
 
 class TestPetCreate:
-    """Tests for POST /pet"""
 
     def test_add_pet_returns_200(self, pet_client: PetClient, new_pet_payload: dict):
         response = pet_client.add_pet(new_pet_payload)
@@ -63,7 +62,6 @@ class TestPetCreate:
 
 
 class TestPetRead:
-    """Tests for GET /pet/findByStatus and GET /pet/{id}"""
 
     @pytest.mark.parametrize("status", ["available", "pending", "sold"])
     def test_find_pets_by_status_returns_list(self, pet_client: PetClient, status: str):
@@ -107,7 +105,6 @@ class TestPetRead:
 
 
 class TestPetUpdate:
-    """Tests for PUT /pet and POST /pet/{id} (form data)"""
 
     def test_update_pet_name_returns_200(self, pet_client: PetClient, created_pet: dict):
         updated_payload = {**created_pet, "name": "UpdatedName"}
@@ -133,7 +130,6 @@ class TestPetUpdate:
 
 
 class TestPetDelete:
-    """Tests for DELETE /pet/{id}"""
 
     def test_delete_pet_returns_200(self, pet_client: PetClient, new_pet_payload: dict):
         create_resp = pet_client.add_pet(new_pet_payload)
